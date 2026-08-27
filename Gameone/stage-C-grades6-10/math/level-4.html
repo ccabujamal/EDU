@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Quiz Challenge — Level 1</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+       /* ✅ NEW GLOWING CYAN LOOK: */
+:root {
+    --bg-space: #2D1B60;
+    --surface-card: #4E31AA;
+    --accent-yellow: #FFD23F;; /* Changed to #9C27B0;! */
+    --accent-pink: #FF3366;
+    --accent-cyan: #00F5D4;
+    --success-green: #00E676;
+    --text-white: #FFFFFF;
+}
+
+
+        body { background-color: var(--bg-space); color: var(--text-white); font-family: 'Fredoka', sans-serif; padding: 20px; text-align: center; }
+        
+        .quiz-box { 
+            background-color: var(--surface-card); border: 3px solid var(--accent-yellow); 
+            border-radius: 20px; max-width: 440px; margin: 30px auto; padding: 24px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4); position: relative;
+        }
+        
+        .progress-track { display: flex; justify-content: center; gap: 6px; margin: 14px 0; }
+        .progress-dot { width: 12px; height: 12px; background: rgba(0,0,0,0.3); border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+        .progress-dot.active { background: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan); }
+        .progress-dot.correct { background: var(--success-green); }
+        .progress-dot.wrong { background: var(--accent-pink); }
+
+        .quiz-q { font-size: 1.35rem; margin: 20px 0; line-height: 1.4; min-height: 70px; display: flex; align-items: center; justify-content: center; }
+        .options-stack { display: flex; flex-direction: column; gap: 10px; }
+        
+        .opt-btn { 
+            background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1); 
+            color: #fff; padding: 14px; border-radius: 12px; font-size: 1.05rem; 
+            text-align: left; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px;
+        }
+        .header-tag { color: var(--accent-cyan); font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-box">
+        <div class="header-tag">Math3 Level 1 — Question <span id="q-current-number">1</span>/10</div>
+        
+        <!-- 10 Dots Progress Bar Track -->
+        <div class="progress-track" id="dots-container"></div>
+        
+        <div class="quiz-q" id="question-display-box">Loading Question...</div>
+        <div class="options-stack" id="options-display-box"></div>
+    </div>
+
+    <script>
+        // 📥 The Complete Level 1 Dataset Array Block
+    const localQuestionsList = [
+    { q: "Calculate the area of a triangle with a base of 10 cm and a height of 6 cm:", a: ["16 cm²", "30 cm²", "60 cm²", "80 cm²"], c: "30 cm²" },
+    { q: "According to the Pythagorean theorem (a² + b² = c²), if the legs of a right triangle are 3 and 4, how long is the hypotenuse?", a: ["5", "6", "7", "25"], c: "5" },
+    { q: "What is the sum of all interior angles inside any triangle?", a: [ "90°", "180°", "270°", "360°"], c: "180°" },
+    { q: "Calculate the area of a circle with a radius of 7 cm (Use π ≈ 22/7):", a: ["22 cm²", "44 cm²", "154 cm²", "196 cm²"], c: "154 cm²" },
+    { q: "What is the sum of all interior angles inside any quadrilateral (4-sided shape)?", a: ["180°", "270°", "360°", "540°"], c: "360°" },
+    { q: "If a right triangle has legs of length 5 cm and 12 cm, what is the length of its hypotenuse?", a: ["13 cm", "15 cm", "17 cm", "169 cm"], c: "13 cm" },
+    { q: "Calculate the area of a parallelogram with a base of 8 cm and a height of 5 cm:", a: ["13 cm²", "20 cm²", "40 cm²", "80 cm²"], c: "40 cm²" },
+    { q: "An isosceles triangle has two sides that are equal. What else must be equal?", a: ["All three sides", "Two interior angles", "No angles", "The perimeter"], c: "Two interior angles" },
+    { q: "What is the circumference of a circle with a diameter of 14 cm (Use π ≈ 22/7)?", a: ["22 cm", "44 cm", "88 cm", "154 cm"], c: "44 cm" },
+    { q: "What is the area of a square if its perimeter is 24 cm?", a: ["24 cm²", "36 cm²", "48 cm²", "576 cm²"], c: "36 cm²" }
+];
+
+
+
+
+
+
+
+
+        let currentIndex = 0;
+        let earnedXpBonus = 0;
+
+        function buildDotsTrack() {
+            const container = document.getElementById('dots-container');
+            container.innerHTML = "";
+            for (let i = 0; i < localQuestionsList.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = `progress-dot ${i === 0 ? 'active' : ''}`;
+                container.appendChild(dot);
+            }
+        }
+
+        function displayQuestion() {
+            const currentData = localQuestionsList[currentIndex];
+            document.getElementById('q-current-number').textContent = currentIndex + 1;
+            document.getElementById('question-display-box').textContent = currentData.q;
+            
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((d, idx) => {
+                if(idx === currentIndex) d.classList.add('active');
+                else d.classList.remove('active');
+            });
+
+            const optBox = document.getElementById('options-display-box');
+            optBox.innerHTML = "";
+
+            currentData.a.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = "opt-btn";
+                btn.innerHTML = `<i class="fa-regular fa-circle"></i> ${choice}`;
+                btn.onclick = () => processAnswer(btn, choice, currentData.c);
+                optBox.appendChild(btn);
+            });
+        }
+
+        function processAnswer(selectedBtn, selectedValue, finalCorrectValue) {
+            document.querySelectorAll('.opt-btn').forEach(b => b.style.pointerEvents = "none");
+            const dots = document.querySelectorAll('.progress-dot');
+
+            if (selectedValue === finalCorrectValue) {
+                selectedBtn.style.borderColor = "var(--success-green)";
+                selectedBtn.style.background = "rgba(0, 230, 118, 0.1)";
+                dots[currentIndex].classList.add('correct');
+                earnedXpBonus += 10;
+            } else {
+                selectedBtn.style.borderColor = "var(--accent-pink)";
+                selectedBtn.style.background = "rgba(255, 51, 102, 0.1)";
+                dots[currentIndex].classList.add('wrong');
+            }
+
+            setTimeout(() => {
+                currentIndex++;
+                if (currentIndex < localQuestionsList.length) {
+                    displayQuestion();
+                } else {
+                    finishQuizChallenge();
+                }
+            }, 1000);
+        }
+
+        function finishQuizChallenge() {
+            const db = JSON.parse(localStorage.getItem('studentDB'));
+            const activeUser = sessionStorage.getItem('activeUser');
+
+            if (activeUser && db[activeUser]) {
+                db[activeUser].score = (db[activeUser].score || 0) + earnedXpBonus;
+                localStorage.setItem('studentDB', JSON.stringify(db));
+            }
+
+            alert(`🏆 Game Finished!\nYou answered all 10 puzzles and scored: +${earnedXpBonus} XP!`);
+            // Steps backward 2 levels out of stage-A-kindergarten/iq/ back to main screen
+            window.location.href = "../../index.html";
+        }
+
+        window.onload = function() {
+            buildDotsTrack();
+            displayQuestion();
+        };
+    </script>
+</body>
+</html>

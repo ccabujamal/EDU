@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math - Level 1 Quiz</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        body { background-color: #2D1B60; color: white; font-family: 'Fredoka', sans-serif; padding: 20px; text-align: center; }
+        .quiz-box { background-color: #4E31AA; border: 3px solid #FFD23F; border-radius: 20px; max-width: 400px; margin: 40px auto; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        .quiz-q { font-size: 1.4rem; margin: 20px 0; }
+        .options-stack { display: flex; flex-direction: column; gap: 10px; }
+        .opt-btn { background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1); color:#fff; padding: 14px; border-radius: 12px; font-size: 1.1rem; text-align:left; cursor:pointer; font-weight: 600; }
+        .score-tag { color: #00F5D4; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-box">
+        <div class="score-tag">Math Quiz — Level 1</div>
+        <div class="quiz-q">What is 6 + 4?</div>
+        
+        <div class="options-stack">
+            <!-- Tapping the wrong answers tells them it's wrong -->
+            <button class="opt-btn" onclick="checkAnswer(this, false)">❌ 8</button>
+            <!-- Tapping the correct answer grants points and sends them back! -->
+            <button class="opt-btn" onclick="checkAnswer(this, true)">✨ 10</button>
+            <button class="opt-btn" onclick="checkAnswer(this, false)">❌ 12</button>
+        </div>
+    </div>
+
+    <script>
+        function checkAnswer(button, isCorrect) {
+            // Stop extra button taps
+            document.querySelectorAll('.opt-btn').forEach(b => b.style.pointerEvents = "none");
+
+            if(isCorrect) {
+                button.style.borderColor = "#00E676";
+                button.style.background = "rgba(0, 230, 118, 0.1)";
+                
+                // Fetch student database, locate who is playing, and give them +10 XP!
+                const db = JSON.parse(localStorage.getItem('studentDB'));
+                // Finds out who logged into the app before landing on this page
+                let activeUser = "";
+                
+                // Smart look up loops to figure out who is active
+                Object.keys(db).forEach(user => {
+                    if(db[user].logins > 0 && user !== 'admin') activeUser = user;
+                });
+
+                if(activeUser) {
+                    db[activeUser].score = (db[activeUser].score || 0) + 10;
+                    localStorage.setItem('studentDB', JSON.stringify(db));
+                }
+
+                setTimeout(() => {
+                    alert("Awesome Job! Correct! +10 XP Added 🌟");
+                    // Sends the student right back to their main game dashboard board dashboard page
+                    window.location.href = "index.html";
+                }, 1000);
+
+            } else {
+                button.style.borderColor = "#FF3366";
+                button.style.background = "rgba(255, 51, 102, 0.1)";
+                setTimeout(() => {
+                    alert("Oops! Try again next time! 🚀");
+                    window.location.href = "index.html";
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
